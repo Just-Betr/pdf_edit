@@ -6,15 +6,23 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('SignaturePad', () {
-    testWidgets('exposes strokes and canvas size via the controller', (tester) async {
+    testWidgets('exposes strokes and canvas size via the controller', (
+      tester,
+    ) async {
       final controller = SignaturePadController();
 
       await tester.pumpWidget(
         MaterialApp(
-          theme: ThemeData(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo)),
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+          ),
           home: Scaffold(
             body: Center(
-              child: SignaturePad(controller: controller, canvasSize: const Size(240, 140)),
+              child: SignaturePad(
+                controller: controller,
+                canvasSize: const Size(240, 140),
+              ),
             ),
           ),
         ),
@@ -41,7 +49,11 @@ void main() {
       final mutated = controller.strokes;
       mutated.first.add(const Offset(99, 99));
 
-      expect(controller.strokes.first.length, originalLength, reason: 'strokes should be defensive copies');
+      expect(
+        controller.strokes.first.length,
+        originalLength,
+        reason: 'strokes should be defensive copies',
+      );
 
       controller.clear();
       await tester.pumpAndSettle();

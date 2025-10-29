@@ -7,7 +7,9 @@ import 'dart:ui';
 /// captured while the user maintained contact with the canvas.
 class PdfSignatureData {
   PdfSignatureData({required List<List<Offset>> strokes, Size? canvasSize})
-    : strokes = List<List<Offset>>.unmodifiable(strokes.map((final stroke) => List<Offset>.unmodifiable(stroke))),
+    : strokes = List<List<Offset>>.unmodifiable(
+        strokes.map((final stroke) => List<Offset>.unmodifiable(stroke)),
+      ),
       canvasSize = canvasSize ?? Size.zero;
 
   /// Individual strokes, where each stroke is a series of [Offset] samples.

@@ -39,7 +39,8 @@ class PdfFieldBinding {
   }
 
   @override
-  bool operator ==(final Object other) => other is PdfFieldBinding && other.value == value;
+  bool operator ==(final Object other) =>
+      other is PdfFieldBinding && other.value == value;
 
   @override
   int get hashCode => value.hashCode;
@@ -165,7 +166,10 @@ class PdfTemplatePage {
 /// Infers a friendly template name from a bundle asset path.
 String inferPdfNameFromAsset(final String assetPath) {
   final normalised = assetPath.replaceAll('\\', '/');
-  final segments = normalised.split('/').where((final segment) => segment.isNotEmpty).toList(growable: false);
+  final segments = normalised
+      .split('/')
+      .where((final segment) => segment.isNotEmpty)
+      .toList(growable: false);
   if (segments.isEmpty) {
     return assetPath;
   }

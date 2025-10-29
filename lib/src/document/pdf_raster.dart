@@ -6,7 +6,10 @@ import 'package:pdf/pdf.dart';
 abstract class PdfPageRasterizer {
   const PdfPageRasterizer();
 
-  Future<List<PdfRasterPage>> rasterize({required Uint8List documentBytes, required double dpi});
+  Future<List<PdfRasterPage>> rasterize({
+    required Uint8List documentBytes,
+    required double dpi,
+  });
 }
 
 /// Represents a rasterised PDF page produced by a [PdfPageRasterizer].

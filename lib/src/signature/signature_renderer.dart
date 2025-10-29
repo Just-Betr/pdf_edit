@@ -4,7 +4,10 @@ import 'dart:ui';
 import 'pdf_signature_data.dart';
 
 /// Renders the provided signature strokes into a PNG payload suitable for PDF embedding.
-Future<Uint8List> renderSignatureAsPng({required final PdfSignatureData signature, final double? targetHeight}) async {
+Future<Uint8List> renderSignatureAsPng({
+  required final PdfSignatureData signature,
+  final double? targetHeight,
+}) async {
   final strokes = signature.strokes;
   final canvasSize = signature.canvasSize;
 
@@ -38,7 +41,9 @@ Future<Uint8List> renderSignatureAsPng({required final PdfSignatureData signatur
   final outputWidth = (contentWidth + margin * 2).ceil();
   final outputHeight = (contentHeight + margin * 2).ceil();
   final desiredStroke = 2.4;
-  final scaleFactor = targetHeight != null && targetHeight > 0 ? outputHeight / targetHeight : 1.0;
+  final scaleFactor = targetHeight != null && targetHeight > 0
+      ? outputHeight / targetHeight
+      : 1.0;
   final strokeWidth = (desiredStroke * scaleFactor).clamp(2.0, 12.0);
 
   final recorder = PictureRecorder();

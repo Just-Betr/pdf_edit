@@ -169,18 +169,31 @@ class PdfDocumentBuilder {
   /// rendered immediately or after the bindings are populated.
   PdfDocument build() {
     final template = _buildTemplate();
-    return PdfDocument(template: template, loader: _loader, compress: _compress);
+    return PdfDocument(
+      template: template,
+      loader: _loader,
+      compress: _compress,
+    );
   }
 
-  _PageBuffer _page(final int index) => _pages.putIfAbsent(index, () => _PageBuffer(index));
+  _PageBuffer _page(final int index) =>
+      _pages.putIfAbsent(index, () => _PageBuffer(index));
 
   PdfDocumentTemplate _buildTemplate() {
     final pages =
         _pages.values
-            .map((final state) => state.toTemplatePage(defaultFormat: PdfPageFormat.letter))
+            .map(
+              (final state) =>
+                  state.toTemplatePage(defaultFormat: PdfPageFormat.letter),
+            )
             .toList(growable: false)
           ..sort((final a, final b) => a.index.compareTo(b.index));
-    return PdfDocumentTemplate(assetPath: _assetPath, pdfName: _pdfName, pages: pages, rasterDpi: _rasterDpi);
+    return PdfDocumentTemplate(
+      assetPath: _assetPath,
+      pdfName: _pdfName,
+      pages: pages,
+      rasterDpi: _rasterDpi,
+    );
   }
 
   void _assertBinding(final String name) {
@@ -194,12 +207,15 @@ class PdfDocumentBuilder {
 class PdfDocument {
   /// Creates a document backed by an internal template definition that knows
   /// how to rasterize the asset and render bytes on demand via [generate].
-  PdfDocument({required final PdfDocumentTemplate template, PdfTemplateLoader? loader, bool compress = true})
-    : _template = template,
-      _loader = loader ?? PdfTemplateLoader(),
-      _compress = compress,
-      _staticBytes = null,
-      data = PdfDocumentData();
+  PdfDocument({
+    required final PdfDocumentTemplate template,
+    PdfTemplateLoader? loader,
+    bool compress = true,
+  }) : _template = template,
+       _loader = loader ?? PdfTemplateLoader(),
+       _compress = compress,
+       _staticBytes = null,
+       data = PdfDocumentData();
 
   /// Wraps an existing PDF payload so it can participate in the same workflows
   /// as template-driven documents. The incoming [bytes] are defensively copied
@@ -248,8 +264,14 @@ class PdfDocument {
     }
 
     final payload = using ?? data;
-    final template = await _obtainTemplate(loader: loader, definition: templateDefinition);
-    final signatureImages = await _collectSignatureImages(template: template, data: payload);
+    final template = await _obtainTemplate(
+      loader: loader,
+      definition: templateDefinition,
+    );
+    final signatureImages = await _collectSignatureImages(
+      template: template,
+      data: payload,
+    );
 
     final doc = Document(compress: _compress);
     for (final page in template.pages) {
@@ -257,7 +279,11 @@ class PdfDocument {
         Page(
           pageFormat: page.pageFormat,
           margin: EdgeInsets.zero,
-          build: (final context) => _buildPage(page: page, data: payload, signatureImages: signatureImages),
+          build: (final context) => _buildPage(
+            page: page,
+            data: payload,
+            signatureImages: signatureImages,
+          ),
         ),
       );
     }
@@ -285,10 +311,16 @@ class PdfDocument {
     final result = <_SignatureCacheKey, MemoryImage?>{};
 
     for (final page in template.pages) {
-      for (final field in page.fields.where((final field) => field.type == PdfFieldType.signature)) {
+      for (final field in page.fields.where(
+        (final field) => field.type == PdfFieldType.signature,
+      )) {
         final bindingName = field.binding.value;
         final targetHeight =
-            _resolveSize(value: field.height, axisExtent: page.pageFormat.height, unit: field.sizeUnit) ??
+            _resolveSize(
+              value: field.height,
+              axisExtent: page.pageFormat.height,
+              unit: field.sizeUnit,
+            ) ??
             page.pageFormat.height * 0.15;
         final cacheKey = _SignatureCacheKey(bindingName, targetHeight);
         if (result.containsKey(cacheKey)) {
@@ -301,7 +333,10 @@ class PdfDocument {
           continue;
         }
 
-        final bytes = await renderSignatureAsPng(signature: signatureData, targetHeight: targetHeight);
+        final bytes = await renderSignatureAsPng(
+          signature: signatureData,
+          targetHeight: targetHeight,
+        );
         result[cacheKey] = bytes.isEmpty ? null : MemoryImage(bytes);
       }
     }
@@ -316,11 +351,20 @@ class PdfDocument {
   }) {
     final children = <Widget>[];
     if (page.background != null) {
-      children.add(Positioned.fill(child: Image(page.background!, fit: BoxFit.cover)));
+      children.add(
+        Positioned.fill(child: Image(page.background!, fit: BoxFit.cover)),
+      );
     }
 
     for (final field in page.fields) {
-      children.add(_buildField(page: page, field: field, data: data, signatureImages: signatureImages));
+      children.add(
+        _buildField(
+          page: page,
+          field: field,
+          data: data,
+          signatureImages: signatureImages,
+        ),
+      );
     }
 
     return Stack(children: children);
@@ -334,15 +378,34 @@ class PdfDocument {
   }) {
     final pageWidth = page.pageFormat.width;
     final pageHeight = page.pageFormat.height;
-    final left = _resolveCoordinate(value: field.x, axisExtent: pageWidth, unit: field.positionUnit);
-    final top = _resolveCoordinate(value: field.y, axisExtent: pageHeight, unit: field.positionUnit);
-    final width = _resolveSize(value: field.width, axisExtent: pageWidth, unit: field.sizeUnit);
-    final height = _resolveSize(value: field.height, axisExtent: pageHeight, unit: field.sizeUnit);
+    final left = _resolveCoordinate(
+      value: field.x,
+      axisExtent: pageWidth,
+      unit: field.positionUnit,
+    );
+    final top = _resolveCoordinate(
+      value: field.y,
+      axisExtent: pageHeight,
+      unit: field.positionUnit,
+    );
+    final width = _resolveSize(
+      value: field.width,
+      axisExtent: pageWidth,
+      unit: field.sizeUnit,
+    );
+    final height = _resolveSize(
+      value: field.height,
+      axisExtent: pageHeight,
+      unit: field.sizeUnit,
+    );
 
     switch (field.type) {
       case PdfFieldType.text:
         final rawValue = data.value(field.binding.value);
-        final resolvedText = _resolveTextValue(rawValue, uppercase: field.uppercase);
+        final resolvedText = _resolveTextValue(
+          rawValue,
+          uppercase: field.uppercase,
+        );
         if (!field.isRequired && resolvedText.trim().isEmpty) {
           return Positioned(
             left: left,
@@ -351,16 +414,27 @@ class PdfDocument {
           );
         }
 
-        final maxLines = field.allowWrap ? field.maxLines : (field.maxLines ?? 1);
+        final maxLines = field.allowWrap
+            ? field.maxLines
+            : (field.maxLines ?? 1);
         final textWidget = Text(
           resolvedText,
-          style: TextStyle(fontSize: field.fontSize ?? 12, fontWeight: FontWeight.normal, color: PdfColors.black),
+          style: TextStyle(
+            fontSize: field.fontSize ?? 12,
+            fontWeight: FontWeight.normal,
+            color: PdfColors.black,
+          ),
           textAlign: _mapTextAlign(alignment: field.textAlignment),
           maxLines: maxLines,
           overflow: TextOverflow.clip,
         );
 
-        final wrapped = _wrapTextWidget(textWidget: textWidget, width: width, height: height, field: field);
+        final wrapped = _wrapTextWidget(
+          textWidget: textWidget,
+          width: width,
+          height: height,
+          field: field,
+        );
 
         return Positioned(left: left, top: top, child: wrapped);
 
@@ -386,19 +460,36 @@ class PdfDocument {
           decoration: BoxDecoration(color: PdfColor.fromInt(0xFFF2F4F7)),
           child: Text(
             'Signature not captured',
-            style: TextStyle(fontSize: (field.fontSize ?? 12), color: PdfColors.grey600),
+            style: TextStyle(
+              fontSize: (field.fontSize ?? 12),
+              color: PdfColors.grey600,
+            ),
           ),
         );
 
-        final padding = boxHeight <= 0 ? 0.0 : min(6.0, max(0.0, boxHeight * 0.1));
-        final availableWidth = (boxWidth - padding * 2).clamp(0.0, double.infinity).toDouble();
-        final availableHeight = (boxHeight - padding * 2).clamp(0.0, double.infinity).toDouble();
+        final padding = boxHeight <= 0
+            ? 0.0
+            : min(6.0, max(0.0, boxHeight * 0.1));
+        final availableWidth = (boxWidth - padding * 2)
+            .clamp(0.0, double.infinity)
+            .toDouble();
+        final availableHeight = (boxHeight - padding * 2)
+            .clamp(0.0, double.infinity)
+            .toDouble();
 
-        final signatureWidget = hasSignature && availableWidth > 0 && availableHeight > 0
+        final signatureWidget =
+            hasSignature && availableWidth > 0 && availableHeight > 0
             ? Container(
-                padding: padding > 0 ? EdgeInsets.all(padding) : EdgeInsets.zero,
+                padding: padding > 0
+                    ? EdgeInsets.all(padding)
+                    : EdgeInsets.zero,
                 alignment: Alignment.center,
-                child: Image(signatureImage, width: availableWidth, height: availableHeight, fit: BoxFit.contain),
+                child: Image(
+                  signatureImage,
+                  width: availableWidth,
+                  height: availableHeight,
+                  fit: BoxFit.contain,
+                ),
               )
             : placeholder;
 
@@ -415,7 +506,10 @@ class PdfDocument {
     }
   }
 
-  String _resolveTextValue(final Object? value, {required final bool uppercase}) {
+  String _resolveTextValue(
+    final Object? value, {
+    required final bool uppercase,
+  }) {
     final text = _stringifyValue(value);
     return uppercase ? text.toUpperCase() : text;
   }
@@ -504,14 +598,28 @@ class PdfDocument {
     final alignment = _mapAlignment(alignment: field.textAlignment);
 
     if (field.allowWrap && !field.shrinkToFit) {
-      return Container(width: width, height: height, alignment: alignment, child: textWidget);
+      return Container(
+        width: width,
+        height: height,
+        alignment: alignment,
+        child: textWidget,
+      );
     }
 
     final child = field.shrinkToFit
-        ? FittedBox(alignment: alignment, fit: BoxFit.scaleDown, child: textWidget)
+        ? FittedBox(
+            alignment: alignment,
+            fit: BoxFit.scaleDown,
+            child: textWidget,
+          )
         : textWidget;
 
-    return Container(width: width, height: height, alignment: alignment, child: child);
+    return Container(
+      width: width,
+      height: height,
+      alignment: alignment,
+      child: child,
+    );
   }
 }
 
@@ -522,7 +630,9 @@ class _PageBuffer {
   PdfPageFormat? pageFormat;
   final List<PdfFieldConfig> fields = <PdfFieldConfig>[];
 
-  PdfDocumentTemplatePage toTemplatePage({required final PdfPageFormat defaultFormat}) {
+  PdfDocumentTemplatePage toTemplatePage({
+    required final PdfPageFormat defaultFormat,
+  }) {
     return PdfDocumentTemplatePage(
       index: index,
       fields: List<PdfFieldConfig>.unmodifiable(fields),

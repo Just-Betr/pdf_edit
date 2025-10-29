@@ -26,7 +26,10 @@ class PdfDocumentTemplate {
   /// Immutable collection of page definitions.
   final List<PdfDocumentTemplatePage> pages;
 
-  static String _resolveName({required final String assetPath, final String? override}) {
+  static String _resolveName({
+    required final String assetPath,
+    final String? override,
+  }) {
     final provided = override?.trim();
     if (provided != null && provided.isNotEmpty) {
       return provided;
@@ -37,8 +40,11 @@ class PdfDocumentTemplate {
 
 /// Page-level configuration produced by [PdfDocumentBuilder].
 class PdfDocumentTemplatePage {
-  PdfDocumentTemplatePage({required this.index, required List<PdfFieldConfig> fields, this.pageFormat})
-    : fields = List<PdfFieldConfig>.unmodifiable(fields);
+  PdfDocumentTemplatePage({
+    required this.index,
+    required List<PdfFieldConfig> fields,
+    this.pageFormat,
+  }) : fields = List<PdfFieldConfig>.unmodifiable(fields);
 
   /// Page index inside the source PDF.
   final int index;

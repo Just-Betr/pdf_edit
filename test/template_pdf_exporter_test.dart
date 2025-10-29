@@ -13,15 +13,28 @@ void main() {
 
   group('Signature renderer', () {
     test('returns empty bytes when no signature data', () async {
-      final signature = PdfSignatureData(strokes: const <List<Offset>>[], canvasSize: const Size(200, 80));
+      final signature = PdfSignatureData(
+        strokes: const <List<Offset>>[],
+        canvasSize: const Size(200, 80),
+      );
       final bytes = await renderSignatureAsPng(signature: signature);
       expect(bytes, isEmpty);
     });
 
     test('renders PNG bytes for captured strokes', () async {
-      final stroke = <Offset>[const Offset(0, 0), const Offset(50, 10), const Offset(120, 40)];
-      final signature = PdfSignatureData(strokes: <List<Offset>>[stroke], canvasSize: const Size(200, 80));
-      final bytes = await renderSignatureAsPng(signature: signature, targetHeight: 40);
+      final stroke = <Offset>[
+        const Offset(0, 0),
+        const Offset(50, 10),
+        const Offset(120, 40),
+      ];
+      final signature = PdfSignatureData(
+        strokes: <List<Offset>>[stroke],
+        canvasSize: const Size(200, 80),
+      );
+      final bytes = await renderSignatureAsPng(
+        signature: signature,
+        targetHeight: 40,
+      );
       expect(bytes, isNotEmpty);
 
       // Decode the PNG to confirm it is a valid image payload.
@@ -42,7 +55,13 @@ void main() {
             index: 0,
             pageFormat: PdfPageFormat.a4,
             fields: <PdfFieldConfig>[
-              PdfFieldConfig(binding: binding, type: PdfFieldType.text, pageIndex: 0, x: 0, y: 0),
+              PdfFieldConfig(
+                binding: binding,
+                type: PdfFieldType.text,
+                pageIndex: 0,
+                x: 0,
+                y: 0,
+              ),
             ],
           ),
         ],
@@ -57,23 +76,39 @@ void main() {
             index: 0,
             pageFormat: PdfPageFormat.a4,
             fields: <PdfFieldConfig>[
-              PdfFieldConfig(binding: binding, type: PdfFieldType.text, pageIndex: 0, x: 0, y: 0),
+              PdfFieldConfig(
+                binding: binding,
+                type: PdfFieldType.text,
+                pageIndex: 0,
+                x: 0,
+                y: 0,
+              ),
             ],
           ),
         ],
       );
 
       final loader = _StubTemplateLoader(template);
-      final document = PdfDocument(template: definition, loader: loader, compress: false);
+      final document = PdfDocument(
+        template: definition,
+        loader: loader,
+        compress: false,
+      );
 
-      final data = PdfDocumentData(values: const <String, Object?>{'firstName': 'Ada'});
+      final data = PdfDocumentData(
+        values: const <String, Object?>{'firstName': 'Ada'},
+      );
 
       final bytesOne = await document.generate(using: data);
       final bytesTwo = await document.generate(using: data);
 
       expect(bytesOne, isNotEmpty);
       expect(bytesTwo, isNotEmpty);
-      expect(loader.loadCalls, 1, reason: 'Template should be cached across builds.');
+      expect(
+        loader.loadCalls,
+        1,
+        reason: 'Template should be cached across builds.',
+      );
     });
 
     test('formats values using default rules', () async {
@@ -86,8 +121,20 @@ void main() {
             index: 0,
             pageFormat: PdfPageFormat.a4,
             fields: <PdfFieldConfig>[
-              PdfFieldConfig(binding: subscribe, type: PdfFieldType.text, pageIndex: 0, x: 0, y: 0),
-              PdfFieldConfig(binding: startedOn, type: PdfFieldType.text, pageIndex: 0, x: 0, y: 0),
+              PdfFieldConfig(
+                binding: subscribe,
+                type: PdfFieldType.text,
+                pageIndex: 0,
+                x: 0,
+                y: 0,
+              ),
+              PdfFieldConfig(
+                binding: startedOn,
+                type: PdfFieldType.text,
+                pageIndex: 0,
+                x: 0,
+                y: 0,
+              ),
             ],
           ),
         ],
@@ -102,15 +149,31 @@ void main() {
             index: 0,
             pageFormat: PdfPageFormat.a4,
             fields: <PdfFieldConfig>[
-              PdfFieldConfig(binding: subscribe, type: PdfFieldType.text, pageIndex: 0, x: 0, y: 0),
-              PdfFieldConfig(binding: startedOn, type: PdfFieldType.text, pageIndex: 0, x: 0, y: 0),
+              PdfFieldConfig(
+                binding: subscribe,
+                type: PdfFieldType.text,
+                pageIndex: 0,
+                x: 0,
+                y: 0,
+              ),
+              PdfFieldConfig(
+                binding: startedOn,
+                type: PdfFieldType.text,
+                pageIndex: 0,
+                x: 0,
+                y: 0,
+              ),
             ],
           ),
         ],
       );
 
       final loader = _StubTemplateLoader(template);
-      final document = PdfDocument(template: definition, loader: loader, compress: false);
+      final document = PdfDocument(
+        template: definition,
+        loader: loader,
+        compress: false,
+      );
 
       final data = PdfDocumentData()
         ..setCheckbox(binding: 'subscribe', value: true)

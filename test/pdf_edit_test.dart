@@ -22,12 +22,33 @@ void main() {
         canvasSize: const Size(120, 40),
       );
 
-      final builder = PdfDocumentBuilder(assetPath: 'assets/mock.pdf', loader: loader);
+      final builder = PdfDocumentBuilder(
+        assetPath: 'assets/mock.pdf',
+        loader: loader,
+      );
 
       builder
-        ..text(page: 0, binding: 'firstName', x: 10.0, y: 20.0, size: const Size(80.0, 20.0))
-        ..checkbox(page: 0, binding: 'subscribe', x: 15.0, y: 50.0, size: const Size(12.0, 12.0))
-        ..signature(page: 0, binding: 'signature', x: 30.0, y: 100.0, size: const Size(150.0, 40.0));
+        ..text(
+          page: 0,
+          binding: 'firstName',
+          x: 10.0,
+          y: 20.0,
+          size: const Size(80.0, 20.0),
+        )
+        ..checkbox(
+          page: 0,
+          binding: 'subscribe',
+          x: 15.0,
+          y: 50.0,
+          size: const Size(12.0, 12.0),
+        )
+        ..signature(
+          page: 0,
+          binding: 'signature',
+          x: 30.0,
+          y: 100.0,
+          size: const Size(150.0, 40.0),
+        );
 
       final document = builder.build();
       document.data
@@ -45,9 +66,18 @@ void main() {
     });
     test('generate returns rendered bytes', () async {
       final loader = _RecordingTemplateLoader();
-      final builder = PdfDocumentBuilder(assetPath: 'assets/mock.pdf', loader: loader);
+      final builder = PdfDocumentBuilder(
+        assetPath: 'assets/mock.pdf',
+        loader: loader,
+      );
 
-      builder.text(page: 0, binding: 'firstName', x: 10.0, y: 20.0, size: const Size(80.0, 20.0));
+      builder.text(
+        page: 0,
+        binding: 'firstName',
+        x: 10.0,
+        y: 20.0,
+        size: const Size(80.0, 20.0),
+      );
 
       final document = builder.build();
       document.data.setText(binding: 'firstName', value: 'Ada');
@@ -70,13 +100,20 @@ void main() {
       final strokes = <List<Offset>>[
         <Offset>[const Offset(0, 0), const Offset(10, 5)],
       ];
-      final signature = PdfSignatureData(strokes: strokes, canvasSize: const Size(100, 40));
+      final signature = PdfSignatureData(
+        strokes: strokes,
+        canvasSize: const Size(100, 40),
+      );
 
       expect(signature.hasSignature, isTrue);
       expect(signature.isEmpty, isFalse);
 
       strokes.first.add(const Offset(20, 10));
-      expect(signature.strokes.first, hasLength(2), reason: 'Strokes should be defensively copied');
+      expect(
+        signature.strokes.first,
+        hasLength(2),
+        reason: 'Strokes should be defensively copied',
+      );
     });
 
     test('treats insufficient stroke data as empty', () {
@@ -101,8 +138,11 @@ class _RecordingTemplateLoader extends PdfTemplateLoader {
     lastTemplate = definition;
     final pages = definition.pages
         .map(
-          (final page) =>
-              PdfTemplatePage(index: page.index, pageFormat: page.pageFormat ?? PdfPageFormat.a4, fields: page.fields),
+          (final page) => PdfTemplatePage(
+            index: page.index,
+            pageFormat: page.pageFormat ?? PdfPageFormat.a4,
+            fields: page.fields,
+          ),
         )
         .toList(growable: false);
     return PdfTemplate(

@@ -11,7 +11,10 @@ class _PrintingPdfPageRasterizer implements PdfPageRasterizer {
   const _PrintingPdfPageRasterizer();
 
   @override
-  Future<List<PdfRasterPage>> rasterize({required final Uint8List documentBytes, required final double dpi}) async {
+  Future<List<PdfRasterPage>> rasterize({
+    required final Uint8List documentBytes,
+    required final double dpi,
+  }) async {
     final rasters = await Printing.raster(documentBytes, dpi: dpi).toList();
     if (rasters.isEmpty) {
       return <PdfRasterPage>[];
@@ -57,8 +60,13 @@ class PdfTemplateLoader {
 
     final assetData = await _bundle.load(definition.assetPath);
     final bytes = assetData.buffer.asUint8List();
-    final rasters = await _rasterizer.rasterize(documentBytes: bytes, dpi: definition.rasterDpi);
-    final rasterLookup = <int, PdfRasterPage>{for (final raster in rasters) raster.pageIndex: raster};
+    final rasters = await _rasterizer.rasterize(
+      documentBytes: bytes,
+      dpi: definition.rasterDpi,
+    );
+    final rasterLookup = <int, PdfRasterPage>{
+      for (final raster in rasters) raster.pageIndex: raster,
+    };
 
     final sortedPages = List<PdfDocumentTemplatePage>.from(definition.pages)
       ..sort((final a, final b) => a.index.compareTo(b.index));
@@ -69,8 +77,12 @@ class PdfTemplateLoader {
 
       final pageFormat =
           pageConfig.pageFormat ??
-          (raster != null ? PdfPageFormat(raster.widthPoints, raster.heightPoints) : PdfPageFormat.letter);
-      final backgroundImage = raster != null ? MemoryImage(raster.imageBytes) : null;
+          (raster != null
+              ? PdfPageFormat(raster.widthPoints, raster.heightPoints)
+              : PdfPageFormat.letter);
+      final backgroundImage = raster != null
+          ? MemoryImage(raster.imageBytes)
+          : null;
 
       final fieldsForPage = pageConfig.fields
           .where((final field) => field.pageIndex == pageConfig.index)

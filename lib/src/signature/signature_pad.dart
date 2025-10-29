@@ -11,7 +11,9 @@ class SignaturePadController extends ChangeNotifier {
   Size _canvasSize = Size.zero;
   VoidCallback? _clearCallback;
 
-  List<List<Offset>> get strokes => _strokes.map((final stroke) => List<Offset>.from(stroke)).toList(growable: false);
+  List<List<Offset>> get strokes => _strokes
+      .map((final stroke) => List<Offset>.from(stroke))
+      .toList(growable: false);
 
   /// Size of the capture surface in logical pixels. This reflects the
   /// dimensions provided to the accompanying [SignaturePad] and can differ
@@ -41,13 +43,18 @@ class SignaturePadController extends ChangeNotifier {
     }
   }
 
-  void _updateFromWidget(final List<List<Offset>> strokes, final Size canvasSize) {
+  void _updateFromWidget(
+    final List<List<Offset>> strokes,
+    final Size canvasSize,
+  ) {
     final hasSameSize = _canvasSize == canvasSize;
     final hasSameStrokes = _hasSameStrokes(strokes);
     if (hasSameSize && hasSameStrokes) {
       return;
     }
-    _strokes = strokes.map((final stroke) => List<Offset>.unmodifiable(stroke)).toList(growable: false);
+    _strokes = strokes
+        .map((final stroke) => List<Offset>.unmodifiable(stroke))
+        .toList(growable: false);
     _canvasSize = canvasSize;
     notifyListeners();
   }
@@ -131,7 +138,9 @@ class _SignaturePadState extends State<SignaturePad> {
   }
 
   List<List<Offset>> _snapshotStrokes() {
-    return _strokes.map((final stroke) => List<Offset>.from(stroke)).toList(growable: false);
+    return _strokes
+        .map((final stroke) => List<Offset>.from(stroke))
+        .toList(growable: false);
   }
 
   void _scheduleControllerSync() {
@@ -139,7 +148,10 @@ class _SignaturePadState extends State<SignaturePad> {
       if (!mounted) {
         return;
       }
-      widget.controller._updateFromWidget(_snapshotStrokes(), widget.canvasSize);
+      widget.controller._updateFromWidget(
+        _snapshotStrokes(),
+        widget.canvasSize,
+      );
     });
   }
 
@@ -219,24 +231,27 @@ class _SignaturePadState extends State<SignaturePad> {
           width: widget.canvasSize.width,
           height: widget.canvasSize.height,
           child: ColoredBox(
-            color: widget.backgroundColor ?? Theme.of(context).colorScheme.surfaceContainerHighest,
+            color:
+                widget.backgroundColor ??
+                Theme.of(context).colorScheme.surfaceContainerHighest,
             child: RawGestureDetector(
               behavior: HitTestBehavior.opaque,
               gestures: <Type, GestureRecognizerFactory>{
-                _ImmediatePanGestureRecognizer: GestureRecognizerFactoryWithHandlers<_ImmediatePanGestureRecognizer>(
-                  () => _ImmediatePanGestureRecognizer(),
-                  (final instance) {
-                    instance.onDown = _handlePanDown;
-                    instance.onStart = (final details) {
-                      if (_currentStroke.isEmpty) {
-                        _startStroke(details.localPosition);
-                      }
-                    };
-                    instance.onUpdate = (final details) => _pushPoint(details.localPosition);
-                    instance.onEnd = (final _) => _finishStroke();
-                    instance.onCancel = _finishStroke;
-                  },
-                ),
+                _ImmediatePanGestureRecognizer:
+                    GestureRecognizerFactoryWithHandlers<
+                      _ImmediatePanGestureRecognizer
+                    >(() => _ImmediatePanGestureRecognizer(), (final instance) {
+                      instance.onDown = _handlePanDown;
+                      instance.onStart = (final details) {
+                        if (_currentStroke.isEmpty) {
+                          _startStroke(details.localPosition);
+                        }
+                      };
+                      instance.onUpdate = (final details) =>
+                          _pushPoint(details.localPosition);
+                      instance.onEnd = (final _) => _finishStroke();
+                      instance.onCancel = _finishStroke;
+                    }),
               },
               child: CustomPaint(
                 painter: _SignaturePainter(
@@ -256,7 +271,11 @@ class _SignaturePadState extends State<SignaturePad> {
 }
 
 class _SignaturePainter extends CustomPainter {
-  _SignaturePainter({required this.strokes, required this.strokeWidth, required this.color});
+  _SignaturePainter({
+    required this.strokes,
+    required this.strokeWidth,
+    required this.color,
+  });
 
   final List<List<Offset>> strokes;
   final double strokeWidth;
