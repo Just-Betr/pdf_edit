@@ -1,3 +1,6 @@
+## 0.2.2
+* Dart format every file.
+
 ## 0.2.1
 * Issue with publishing fix.
 
