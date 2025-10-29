@@ -1,0 +1,187 @@
+[
+  {
+    "name": "date",
+    "field_type": "text",
+    "page": 2,
+    "page_size": {
+      "width": 612.0,
+      "height": 792.0
+    },
+    "bounding_box": {
+      "top_left": {
+        "x": 359.629,
+        "y": 627.0
+      },
+      "top_right": {
+        "x": 477.131,
+        "y": 627.0
+      },
+      "bottom_left": {
+        "x": 359.629,
+        "y": 609.0
+      },
+      "bottom_right": {
+        "x": 477.131,
+        "y": 609.0
+      },
+      "width": 117.502,
+      "height": 18.0
+    },
+    "position": {
+      "x": 359.629,
+      "y": 609.0
+    },
+    "size": {
+      "width": 117.502,
+      "height": 18.0
+    }
+  },
+  {
+    "name": "first_name",
+    "field_type": "text",
+    "page": 1,
+    "page_size": {
+      "width": 612.0,
+      "height": 792.0
+    },
+    "bounding_box": {
+      "top_left": {
+        "x": 135.375,
+        "y": 600.0
+      },
+      "top_right": {
+        "x": 237.375,
+        "y": 600.0
+      },
+      "bottom_left": {
+        "x": 135.375,
+        "y": 582.0
+      },
+      "bottom_right": {
+        "x": 237.375,
+        "y": 582.0
+      },
+      "width": 102.0,
+      "height": 18.0
+    },
+    "position": {
+      "x": 135.375,
+      "y": 582.0
+    },
+    "size": {
+      "width": 102.0,
+      "height": 18.0
+    }
+  },
+  {
+    "name": "kewl",
+    "field_type": "check",
+    "page": 2,
+    "page_size": {
+      "width": 612.0,
+      "height": 792.0
+    },
+    "bounding_box": {
+      "top_left": {
+        "x": 92.374,
+        "y": 685.496
+      },
+      "top_right": {
+        "x": 100.121,
+        "y": 685.496
+      },
+      "bottom_left": {
+        "x": 92.374,
+        "y": 675.994
+      },
+      "bottom_right": {
+        "x": 100.121,
+        "y": 675.994
+      },
+      "width": 7.748,
+      "height": 9.503
+    },
+    "position": {
+      "x": 92.374,
+      "y": 675.994
+    },
+    "size": {
+      "width": 7.748,
+      "height": 9.503
+    }
+  },
+  {
+    "name": "last_name",
+    "field_type": "text",
+    "page": 1,
+    "page_size": {
+      "width": 612.0,
+      "height": 792.0
+    },
+    "bounding_box": {
+      "top_left": {
+        "x": 133.875,
+        "y": 572.25
+      },
+      "top_right": {
+        "x": 234.375,
+        "y": 572.25
+      },
+      "bottom_left": {
+        "x": 133.875,
+        "y": 554.25
+      },
+      "bottom_right": {
+        "x": 234.375,
+        "y": 554.25
+      },
+      "width": 100.5,
+      "height": 18.0
+    },
+    "position": {
+      "x": 133.875,
+      "y": 554.25
+    },
+    "size": {
+      "width": 100.5,
+      "height": 18.0
+    }
+  },
+  {
+    "name": "signature",
+    "field_type": "signature",
+    "page": 2,
+    "page_size": {
+      "width": 612.0,
+      "height": 792.0
+    },
+    "bounding_box": {
+      "top_left": {
+        "x": 129.619,
+        "y": 627.499
+      },
+      "top_right": {
+        "x": 323.366,
+        "y": 627.499
+      },
+      "bottom_left": {
+        "x": 129.619,
+        "y": 607.496
+      },
+      "bottom_right": {
+        "x": 323.366,
+        "y": 607.496
+      },
+      "width": 193.747,
+      "height": 20.002
+    },
+    "position": {
+      "x": 129.619,
+      "y": 607.496
+    },
+    "size": {
+      "width": 193.747,
+      "height": 20.002
+    }
+  }
+]
