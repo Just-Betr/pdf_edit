@@ -1,6 +1,6 @@
 name: pdf_edit
 description: "A package to edit and fill the fields of PDF forms."
-version: 0.2.0
+version: 0.2.1
 repository: "https://github.com/Just-Betr/pdf_edit"
 homepage:
 

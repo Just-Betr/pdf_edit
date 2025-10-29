@@ -1,3 +1,6 @@
+## 0.2.1
+* Issue with publishing fix.
+
 ## 0.2.0
 * Tried to potentially move away from Printing package. However the rasterization it provides its the backbone.
 
