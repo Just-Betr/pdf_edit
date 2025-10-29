@@ -12,7 +12,6 @@ dependencies:
   flutter:
     sdk: flutter
   pdf: ^3.10.8
-  printing: ^5.13.3
 
 dev_dependencies:
   flutter_test:
