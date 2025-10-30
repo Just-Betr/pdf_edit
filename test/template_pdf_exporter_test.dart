@@ -1,40 +1,50 @@
+import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf/pdf.dart' hide PdfDocument;
 
 import 'package:pdf_edit/pdf_edit.dart';
-import 'package:pdf_edit/src/document/pdf_document_template.dart';
 import 'package:pdf_edit/src/template/pdf_template.dart';
 import 'package:pdf_edit/src/template/pdf_template_loader.dart';
+
+const MethodChannel _printingChannel = MethodChannel('net.nfet.printing');
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  setUpAll(() {
+    _printingChannel.setMockMethodCallHandler((MethodCall call) async {
+      if (call.method == 'rasterPdf') {
+        final int? job = call.arguments['job'] as int?;
+        if (job != null) {
+          ServicesBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
+            _printingChannel.name,
+            _printingChannel.codec.encodeMethodCall(MethodCall('onPageRasterEnd', <String, dynamic>{'job': job})),
+            (_) {},
+          );
+        }
+      }
+      return null;
+    });
+  });
+
+  tearDownAll(() {
+    _printingChannel.setMockMethodCallHandler(null);
+  });
+
   group('Signature renderer', () {
     test('returns empty bytes when no signature data', () async {
-      final signature = PdfSignatureData(
-        strokes: const <List<Offset>>[],
-        canvasSize: const Size(200, 80),
-      );
+      final signature = PdfSignatureData(strokes: const <List<Offset>>[], canvasSize: const Size(200, 80));
       final bytes = await renderSignatureAsPng(signature: signature);
       expect(bytes, isEmpty);
     });
 
     test('renders PNG bytes for captured strokes', () async {
-      final stroke = <Offset>[
-        const Offset(0, 0),
-        const Offset(50, 10),
-        const Offset(120, 40),
-      ];
-      final signature = PdfSignatureData(
-        strokes: <List<Offset>>[stroke],
-        canvasSize: const Size(200, 80),
-      );
-      final bytes = await renderSignatureAsPng(
-        signature: signature,
-        targetHeight: 40,
-      );
+      final stroke = <Offset>[const Offset(0, 0), const Offset(50, 10), const Offset(120, 40)];
+      final signature = PdfSignatureData(strokes: <List<Offset>>[stroke], canvasSize: const Size(200, 80));
+      final bytes = await renderSignatureAsPng(signature: signature, targetHeight: 40);
       expect(bytes, isNotEmpty);
 
       // Decode the PNG to confirm it is a valid image payload.
@@ -46,132 +56,49 @@ void main() {
   });
 
   group('PdfDocument rendering', () {
-    test('reuses cached template across builds', () async {
+    test('renders consistently across builds', () async {
       final binding = PdfFieldBinding.named('firstName');
-      final definition = PdfDocumentTemplate(
-        assetPath: 'assets/forms/mock.pdf',
-        pages: <PdfDocumentTemplatePage>[
-          PdfDocumentTemplatePage(
-            index: 0,
-            pageFormat: PdfPageFormat.a4,
-            fields: <PdfFieldConfig>[
-              PdfFieldConfig(
-                binding: binding,
-                type: PdfFieldType.text,
-                pageIndex: 0,
-                x: 0,
-                y: 0,
-              ),
-            ],
-          ),
-        ],
+      final layout = PdfPageLayout(
+        index: 0,
+        pageFormat: PdfPageFormat.a4,
+        fields: <PdfFieldConfig>[PdfFieldConfig(binding: binding, type: PdfFieldType.text, pageIndex: 0, x: 0, y: 0)],
       );
 
-      final template = PdfTemplate(
-        assetPath: definition.assetPath,
-        name: 'mock',
-        rasterDpi: 144,
-        pages: <PdfTemplatePage>[
-          PdfTemplatePage(
-            index: 0,
-            pageFormat: PdfPageFormat.a4,
-            fields: <PdfFieldConfig>[
-              PdfFieldConfig(
-                binding: binding,
-                type: PdfFieldType.text,
-                pageIndex: 0,
-                x: 0,
-                y: 0,
-              ),
-            ],
-          ),
-        ],
-      );
-
-      final loader = _StubTemplateLoader(template);
+      final bundle = _CountingAssetBundle();
       final document = PdfDocument(
-        template: definition,
-        loader: loader,
+        assetPath: 'assets/forms/mock.pdf',
+        pages: <PdfPageLayout>[layout],
+        bundle: bundle,
         compress: false,
       );
 
-      final data = PdfDocumentData(
-        values: const <String, Object?>{'firstName': 'Ada'},
-      );
+      final data = PdfDocumentData(values: const <String, Object?>{'firstName': 'Ada'});
 
       final bytesOne = await document.generate(using: data);
       final bytesTwo = await document.generate(using: data);
 
       expect(bytesOne, isNotEmpty);
       expect(bytesTwo, isNotEmpty);
-      expect(
-        loader.loadCalls,
-        1,
-        reason: 'Template should be cached across builds.',
-      );
+      expect(bundle.loadCount, 2, reason: 'Template loads on each render.');
     });
 
     test('formats values using default rules', () async {
       final subscribe = PdfFieldBinding.named('subscribe');
       final startedOn = PdfFieldBinding.named('startedOn');
-      final definition = PdfDocumentTemplate(
-        assetPath: 'assets/forms/mock.pdf',
-        pages: <PdfDocumentTemplatePage>[
-          PdfDocumentTemplatePage(
-            index: 0,
-            pageFormat: PdfPageFormat.a4,
-            fields: <PdfFieldConfig>[
-              PdfFieldConfig(
-                binding: subscribe,
-                type: PdfFieldType.text,
-                pageIndex: 0,
-                x: 0,
-                y: 0,
-              ),
-              PdfFieldConfig(
-                binding: startedOn,
-                type: PdfFieldType.text,
-                pageIndex: 0,
-                x: 0,
-                y: 0,
-              ),
-            ],
-          ),
+      final layout = PdfPageLayout(
+        index: 0,
+        pageFormat: PdfPageFormat.a4,
+        fields: <PdfFieldConfig>[
+          PdfFieldConfig(binding: subscribe, type: PdfFieldType.text, pageIndex: 0, x: 0, y: 0),
+          PdfFieldConfig(binding: startedOn, type: PdfFieldType.text, pageIndex: 0, x: 0, y: 0),
         ],
       );
 
-      final template = PdfTemplate(
-        assetPath: definition.assetPath,
-        name: 'mock',
-        rasterDpi: 144,
-        pages: <PdfTemplatePage>[
-          PdfTemplatePage(
-            index: 0,
-            pageFormat: PdfPageFormat.a4,
-            fields: <PdfFieldConfig>[
-              PdfFieldConfig(
-                binding: subscribe,
-                type: PdfFieldType.text,
-                pageIndex: 0,
-                x: 0,
-                y: 0,
-              ),
-              PdfFieldConfig(
-                binding: startedOn,
-                type: PdfFieldType.text,
-                pageIndex: 0,
-                x: 0,
-                y: 0,
-              ),
-            ],
-          ),
-        ],
-      );
-
-      final loader = _StubTemplateLoader(template);
+      final bundle = _CountingAssetBundle();
       final document = PdfDocument(
-        template: definition,
-        loader: loader,
+        assetPath: 'assets/forms/mock.pdf',
+        pages: <PdfPageLayout>[layout],
+        bundle: bundle,
         compress: false,
       );
 
@@ -182,29 +109,25 @@ void main() {
 
       expect(bytes, isNotEmpty);
 
-      expect(loader.loadCalls, 1);
+      expect(bundle.loadCount, 1);
       final payload = String.fromCharCodes(bytes);
       expect(payload, contains('X'));
       expect(payload, contains('01/05/2024'));
     });
   });
 
-  group('PdfDocumentTemplate', () {
+  group('PdfDocument metadata', () {
     test('infers name when none supplied', () {
-      final template = PdfDocumentTemplate(
-        assetPath: 'templates/contract_v1.pdf',
-        pages: const <PdfDocumentTemplatePage>[],
-      );
-      expect(template.pdfName, 'contract_v1');
+      final document = PdfDocument(assetPath: 'templates/contract_v1.pdf', pages: const <PdfPageLayout>[]);
+      expect(document.pdfName, 'contract_v1');
     });
 
-    test('retains assigned name and fields', () {
+    test('derives name from asset path and retains fields', () {
       final firstName = PdfFieldBinding.named('firstName');
-      final template = PdfDocumentTemplate(
+      final document = PdfDocument(
         assetPath: 'assets/forms/example.pdf',
-        pdfName: 'Example',
-        pages: <PdfDocumentTemplatePage>[
-          PdfDocumentTemplatePage(
+        pages: <PdfPageLayout>[
+          PdfPageLayout(
             index: 0,
             fields: <PdfFieldConfig>[
               PdfFieldConfig(
@@ -223,23 +146,23 @@ void main() {
         ],
       );
 
-      expect(template.assetPath, 'assets/forms/example.pdf');
-      expect(template.pdfName, 'Example');
-      expect(template.pages, hasLength(1));
-      expect(template.pages.first.fields.single.binding, firstName);
+      expect(document.assetPath, 'assets/forms/example.pdf');
+      expect(document.pdfName, 'example');
+      expect(document.pages, hasLength(1));
+      expect(document.pages.first.fields.single.binding, firstName);
     });
   });
 }
 
-class _StubTemplateLoader extends PdfTemplateLoader {
-  _StubTemplateLoader(this.template) : super();
+class _CountingAssetBundle extends CachingAssetBundle {
+  _CountingAssetBundle([Uint8List? bytes]) : bytes = bytes ?? Uint8List(0);
 
-  final PdfTemplate template;
-  int loadCalls = 0;
+  final Uint8List bytes;
+  int loadCount = 0;
 
   @override
-  Future<PdfTemplate> load(final PdfDocumentTemplate config) async {
-    loadCalls += 1;
-    return template;
+  Future<ByteData> load(String key) async {
+    loadCount += 1;
+    return bytes.buffer.asByteData();
   }
 }

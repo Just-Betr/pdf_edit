@@ -3,16 +3,10 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 
 /// Renders PDF pages to raster images that can be used as template backgrounds.
-abstract class PdfPageRasterizer {
-  const PdfPageRasterizer();
+typedef PdfRasterizeCallback =
+    Future<List<PdfRasterPage>> Function({required Uint8List documentBytes, required double dpi});
 
-  Future<List<PdfRasterPage>> rasterize({
-    required Uint8List documentBytes,
-    required double dpi,
-  });
-}
-
-/// Represents a rasterised PDF page produced by a [PdfPageRasterizer].
+/// Represents a rasterised PDF page produced by a [PdfRasterizeCallback].
 class PdfRasterPage {
   const PdfRasterPage({
     required this.pageIndex,
