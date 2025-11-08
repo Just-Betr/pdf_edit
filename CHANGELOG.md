@@ -1,3 +1,6 @@
+## 0.3.2
+* Had to merge the simplify API branch. Again nothing interestin but chores.
+
 ## 0.3.1
 * Mandatory versioning to publish 0.3.0. This update is really nothing important.
 
