@@ -1,12 +1,11 @@
 import 'dart:math';
-import 'dart:typed_data';
-import 'dart:ui';
-
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
+import 'package:printing/printing.dart';
 
 import '../data/pdf_document_data.dart';
+import '../document/pdf_raster.dart';
 import '../signature/signature_renderer.dart';
 import '../template/pdf_template.dart';
 import '../template/pdf_template_loader.dart';
@@ -283,21 +282,14 @@ class PdfDocument {
     }
 
     final payload = using ?? data;
-    final template = _assetBytes != null
-        ? await loadPdfTemplateFromBytes(
-            bytes: _assetBytes,
-            pdfName: pdfName,
-            rasterDpi: rasterDpi,
-            pages: _pages,
-            label: _assetPath ?? 'memory:$pdfName',
-          )
-        : await loadPdfTemplate(
-            assetPath: _assetPath!,
-            pdfName: pdfName,
-            rasterDpi: rasterDpi,
-            pages: _pages,
-            bundle: _bundle,
-          );
+    final templateBytes = _assetBytes;
+    final templateLabel = _assetPath ?? 'memory:$pdfName';
+    final template = await _loadTemplate(
+      pdfName: pdfName,
+      rasterDpi: rasterDpi,
+      templateBytes: templateBytes,
+      templateLabel: templateLabel,
+    );
     final signatureImages = await _collectSignatureImages(template: template, data: payload);
 
     final doc = Document(compress: _compress);
@@ -312,6 +304,92 @@ class PdfDocument {
     }
 
     return doc.save();
+  }
+
+  /// Resolves the source PDF and prepares it for rendering.
+  Future<PdfTemplate> _loadTemplate({
+    required String pdfName,
+    required double rasterDpi,
+    required Uint8List? templateBytes,
+    required String templateLabel,
+  }) async {
+    final bytes = await _resolveTemplateBytes(templateBytes: templateBytes);
+    final rasters = await _rasterizeTemplate(bytes: bytes, dpi: rasterDpi);
+    return _assembleTemplate(pdfName: pdfName, rasterDpi: rasterDpi, templateLabel: templateLabel, rasters: rasters);
+  }
+
+  /// Reads template bytes from memory or the asset bundle.
+  Future<Uint8List> _resolveTemplateBytes({required Uint8List? templateBytes}) async {
+    if (templateBytes != null) {
+      return Uint8List.fromList(templateBytes);
+    }
+
+    final path = _assetPath;
+    if (path == null) {
+      throw StateError('Either template bytes or an asset path must be provided.');
+    }
+
+    final bundle = _bundle ?? rootBundle;
+    final data = await bundle.load(path);
+    return data.buffer.asUint8List();
+  }
+
+  /// Rasterises the template using the printing plugin backgrounds.
+  Future<List<PdfRasterPage>> _rasterizeTemplate({required Uint8List bytes, required double dpi}) async {
+    try {
+      final rasters = await Printing.raster(bytes, dpi: dpi).toList();
+      if (rasters.isEmpty) {
+        return <PdfRasterPage>[];
+      }
+
+      return Future.wait(
+        List<Future<PdfRasterPage>>.generate(rasters.length, (index) async {
+          final raster = rasters[index];
+          final imageBytes = await raster.toPng();
+          return PdfRasterPage(
+            pageIndex: index,
+            imageBytes: imageBytes,
+            pixelWidth: raster.width.toDouble(),
+            pixelHeight: raster.height.toDouble(),
+            dpi: dpi,
+          );
+        }),
+      );
+    } catch (_) {
+      return <PdfRasterPage>[];
+    }
+  }
+
+  /// Combines page layouts with raster images to produce the runtime template.
+  PdfTemplate _assembleTemplate({
+    required String pdfName,
+    required double rasterDpi,
+    required String templateLabel,
+    required List<PdfRasterPage> rasters,
+  }) {
+    final rasterLookup = <int, PdfRasterPage>{for (final raster in rasters) raster.pageIndex: raster};
+    final sortedPages = List<PdfPageLayout>.from(_pages)..sort((a, b) => a.index.compareTo(b.index));
+
+    final templatePages = <PdfTemplatePage>[];
+    for (final layout in sortedPages) {
+      final raster = rasterLookup[layout.index];
+      final pageFormat =
+          layout.pageFormat ??
+          (raster != null ? PdfPageFormat(raster.widthPoints, raster.heightPoints) : PdfPageFormat.letter);
+      final backgroundImage = raster != null ? MemoryImage(raster.imageBytes) : null;
+      final fieldsForPage = layout.fields.where((field) => field.pageIndex == layout.index).toList(growable: false);
+
+      templatePages.add(
+        PdfTemplatePage(
+          index: layout.index,
+          pageFormat: pageFormat,
+          fields: fieldsForPage,
+          background: backgroundImage,
+        ),
+      );
+    }
+
+    return PdfTemplate(assetPath: templateLabel, name: pdfName, rasterDpi: rasterDpi, pages: templatePages);
   }
 
   Future<Map<_SignatureCacheKey, MemoryImage?>> _collectSignatureImages({

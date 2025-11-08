@@ -1,6 +1,3 @@
-import 'dart:typed_data';
-import 'dart:ui';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdf/pdf.dart';
@@ -13,12 +10,13 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() {
-    _printingChannel.setMockMethodCallHandler((MethodCall call) async {
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(_printingChannel, (MethodCall call) async {
       if (call.method == 'rasterPdf') {
         final int? job = call.arguments['job'] as int?;
         if (job != null) {
           // Complete the raster stream immediately with no pages.
-          ServicesBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
+          messenger.handlePlatformMessage(
             _printingChannel.name,
             _printingChannel.codec.encodeMethodCall(MethodCall('onPageRasterEnd', <String, dynamic>{'job': job})),
             (_) {},
@@ -30,7 +28,8 @@ void main() {
   });
 
   tearDownAll(() {
-    _printingChannel.setMockMethodCallHandler(null);
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(_printingChannel, null);
   });
 
   group('PdfDocumentBuilder', () {
@@ -74,8 +73,8 @@ void main() {
       final document = builder.build();
       document.data.setText(binding: 'firstName', value: 'Ada');
 
-      final Uint8List firstPass = await document.generate();
-      final Uint8List secondPass = await document.generate();
+      final firstPass = await document.generate();
+      final secondPass = await document.generate();
 
       expect(firstPass, isNotEmpty);
       expect(secondPass, isNotEmpty);

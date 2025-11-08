@@ -5,11 +5,10 @@
 ## Building blocks
 
 - **PdfDocumentBuilder** – describe template pages and fields. Call `build()` to produce a `PdfDocument` ready for rendering.
-- **PdfDocument** – holds the compiled template definition internally, exposes `PdfDocumentData`, and renders bytes via `generate()`.
+- **PdfDocument** – holds the compiled template definition, resolves template bytes and backgrounds automatically, exposes `PdfDocumentData`, and renders bytes via `generate()`.
 - **PdfDocumentData** – mutable store for field values. Set text, checkbox, and signature bindings on the document after building.
 - **PdfSignatureData** – immutable helper for passing captured ink when you need manual control.
 - **SignaturePad / SignaturePadController** – drop-in Flutter widget for capturing ink strokes and canvas dimensions for signature fields.
-- **PdfTemplateLoader** – loads the source asset, rasterises each page (using the `printing` plugin by default), and caches the result. Pass a custom `rasterize` callback if you want to integrate a different renderer or stub backgrounds.
 
 ## Workflow
 

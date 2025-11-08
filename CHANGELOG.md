@@ -1,3 +1,8 @@
+## 0.3.0
+* Simplified the PDF generation flow so `PdfDocument` resolves assets, rasterises pages, and assembles templates internally.
+* Removed the public template loader API to keep the surface area focused on builder → data → generate.
+* Updated documentation to reflect the streamlined workflow and added sequence diagrams for quick reference.
+
 ## 0.2.2
 * Dart format every file.
 

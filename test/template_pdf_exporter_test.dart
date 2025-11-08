@@ -1,5 +1,4 @@
-import 'dart:typed_data';
-import 'dart:ui';
+import 'dart:ui' as ui show instantiateImageCodec;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,11 +14,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() {
-    _printingChannel.setMockMethodCallHandler((MethodCall call) async {
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(_printingChannel, (MethodCall call) async {
       if (call.method == 'rasterPdf') {
         final int? job = call.arguments['job'] as int?;
         if (job != null) {
-          ServicesBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
+          messenger.handlePlatformMessage(
             _printingChannel.name,
             _printingChannel.codec.encodeMethodCall(MethodCall('onPageRasterEnd', <String, dynamic>{'job': job})),
             (_) {},
@@ -31,7 +31,8 @@ void main() {
   });
 
   tearDownAll(() {
-    _printingChannel.setMockMethodCallHandler(null);
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(_printingChannel, null);
   });
 
   group('Signature renderer', () {
@@ -48,7 +49,7 @@ void main() {
       expect(bytes, isNotEmpty);
 
       // Decode the PNG to confirm it is a valid image payload.
-      final codec = await instantiateImageCodec(bytes);
+      final codec = await ui.instantiateImageCodec(bytes);
       final frame = await codec.getNextFrame();
       expect(frame.image.width, greaterThan(0));
       expect(frame.image.height, greaterThan(0));
