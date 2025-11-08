@@ -1,3 +1,6 @@
+## 0.3.1
+* Mandatory versioning to publish 0.3.0. This update is really nothing important.
+
 ## 0.3.0
 * Simplified the PDF generation flow so `PdfDocument` resolves assets, rasterises pages, and assembles templates internally.
 * Removed the public template loader API to keep the surface area focused on builder → data → generate.
