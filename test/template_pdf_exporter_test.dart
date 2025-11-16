@@ -38,14 +38,16 @@ void main() {
   group('Signature renderer', () {
     test('returns empty bytes when no signature data', () async {
       final signature = PdfSignatureData(strokes: const <List<Offset>>[], canvasSize: const Size(200, 80));
-      final bytes = await renderSignatureAsPng(signature: signature);
+      const renderer = PaintingSignatureRenderer();
+      final bytes = await renderer(signature: signature);
       expect(bytes, isEmpty);
     });
 
     test('renders PNG bytes for captured strokes', () async {
       final stroke = <Offset>[const Offset(0, 0), const Offset(50, 10), const Offset(120, 40)];
       final signature = PdfSignatureData(strokes: <List<Offset>>[stroke], canvasSize: const Size(200, 80));
-      final bytes = await renderSignatureAsPng(signature: signature, targetHeight: 40);
+      const renderer = PaintingSignatureRenderer();
+      final bytes = await renderer(signature: signature, targetHeight: 40);
       expect(bytes, isNotEmpty);
 
       // Decode the PNG to confirm it is a valid image payload.

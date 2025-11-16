@@ -17,21 +17,33 @@ import '../template/pdf_template_loader.dart';
 /// bytes with [PdfDocument.generate]. Coordinates use PDF points measured from
 /// the top-left corner of each page.
 class PdfDocumentBuilder {
-  PdfDocumentBuilder({required String assetPath, double rasterDpi = 144, AssetBundle? bundle, bool compress = true})
-    : _assetPath = assetPath,
-      _assetBytes = null,
-      _documentName = inferPdfNameFromAsset(assetPath),
-      _rasterDpi = rasterDpi,
-      _bundle = bundle,
-      _compress = compress;
+  PdfDocumentBuilder({
+    required String assetPath,
+    double rasterDpi = 144,
+    AssetBundle? bundle,
+    bool compress = true,
+    SignatureRenderer signatureRenderer = const PaintingSignatureRenderer(),
+  }) : _assetPath = assetPath,
+       _assetBytes = null,
+       _documentName = inferPdfNameFromAsset(assetPath),
+       _rasterDpi = rasterDpi,
+       _bundle = bundle,
+       _compress = compress,
+       _signatureRenderer = signatureRenderer;
 
-  PdfDocumentBuilder.fromBytes({required Uint8List bytes, String? name, double rasterDpi = 144, bool compress = true})
-    : _assetPath = null,
-      _assetBytes = Uint8List.fromList(bytes),
-      _documentName = _normaliseDocumentName(name),
-      _rasterDpi = rasterDpi,
-      _bundle = null,
-      _compress = compress;
+  PdfDocumentBuilder.fromBytes({
+    required Uint8List bytes,
+    String? name,
+    double rasterDpi = 144,
+    bool compress = true,
+    SignatureRenderer signatureRenderer = const PaintingSignatureRenderer(),
+  }) : _assetPath = null,
+       _assetBytes = Uint8List.fromList(bytes),
+       _documentName = _normaliseDocumentName(name),
+       _rasterDpi = rasterDpi,
+       _bundle = null,
+       _compress = compress,
+       _signatureRenderer = signatureRenderer;
 
   final String? _assetPath;
   final Uint8List? _assetBytes;
@@ -39,6 +51,7 @@ class PdfDocumentBuilder {
   final double _rasterDpi;
   final AssetBundle? _bundle;
   final bool _compress;
+  final SignatureRenderer _signatureRenderer;
 
   final Map<int, _PageBuffer> _pages = <int, _PageBuffer>{};
 
@@ -154,6 +167,7 @@ class PdfDocumentBuilder {
         rasterDpi: _rasterDpi,
         pages: pages,
         compress: _compress,
+        signatureRenderer: _signatureRenderer,
       );
     }
 
@@ -162,7 +176,14 @@ class PdfDocumentBuilder {
       throw StateError('Asset path is unavailable for this builder.');
     }
 
-    return PdfDocument(assetPath: assetPath, rasterDpi: _rasterDpi, pages: pages, bundle: _bundle, compress: _compress);
+    return PdfDocument(
+      assetPath: assetPath,
+      rasterDpi: _rasterDpi,
+      pages: pages,
+      bundle: _bundle,
+      compress: _compress,
+      signatureRenderer: _signatureRenderer,
+    );
   }
 
   _PageBuffer _page(int index) => _pages.putIfAbsent(index, () => _PageBuffer(index));
@@ -195,6 +216,7 @@ class PdfDocument {
     double rasterDpi = 144,
     AssetBundle? bundle,
     bool compress = true,
+    SignatureRenderer signatureRenderer = const PaintingSignatureRenderer(),
   }) : _assetPath = assetPath,
        _assetBytes = null,
        _pdfName = inferPdfNameFromAsset(assetPath),
@@ -202,19 +224,23 @@ class PdfDocument {
        _pages = List<PdfPageLayout>.unmodifiable(pages),
        _bundle = bundle,
        _compress = compress,
+       _signatureRenderer = signatureRenderer,
        _staticBytes = null,
        data = PdfDocumentData();
 
-  PdfDocument.fromBytes({required Uint8List bytes})
-    : _assetPath = null,
-      _assetBytes = null,
-      _pdfName = null,
-      _rasterDpi = null,
-      _pages = const <PdfPageLayout>[],
-      _bundle = null,
-      _compress = true,
-      _staticBytes = Uint8List.fromList(bytes),
-      data = PdfDocumentData();
+  PdfDocument.fromBytes({
+    required Uint8List bytes,
+    SignatureRenderer signatureRenderer = const PaintingSignatureRenderer(),
+  }) : _assetPath = null,
+       _assetBytes = null,
+       _pdfName = null,
+       _rasterDpi = null,
+       _pages = const <PdfPageLayout>[],
+       _bundle = null,
+       _compress = true,
+       _signatureRenderer = signatureRenderer,
+       _staticBytes = Uint8List.fromList(bytes),
+       data = PdfDocumentData();
 
   PdfDocument._fromTemplateBytes({
     required Uint8List templateBytes,
@@ -222,6 +248,7 @@ class PdfDocument {
     required String name,
     double rasterDpi = 144,
     bool compress = true,
+    SignatureRenderer signatureRenderer = const PaintingSignatureRenderer(),
   }) : _assetPath = null,
        _assetBytes = Uint8List.fromList(templateBytes),
        _pdfName = name,
@@ -229,6 +256,7 @@ class PdfDocument {
        _pages = List<PdfPageLayout>.unmodifiable(pages),
        _bundle = null,
        _compress = compress,
+       _signatureRenderer = signatureRenderer,
        _staticBytes = null,
        data = PdfDocumentData();
 
@@ -239,6 +267,7 @@ class PdfDocument {
   final List<PdfPageLayout> _pages;
   final AssetBundle? _bundle;
   final bool _compress;
+  final SignatureRenderer _signatureRenderer;
   final Uint8List? _staticBytes;
 
   final PdfDocumentData data;
@@ -415,7 +444,7 @@ class PdfDocument {
           continue;
         }
 
-        final bytes = await renderSignatureAsPng(signature: signatureData, targetHeight: targetHeight);
+        final bytes = await _signatureRenderer(signature: signatureData, targetHeight: targetHeight);
         result[cacheKey] = bytes.isEmpty ? null : MemoryImage(bytes);
       }
     }

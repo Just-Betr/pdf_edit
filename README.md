@@ -8,6 +8,7 @@
 - **PdfDocument** – holds the compiled template definition, resolves template bytes and backgrounds automatically, exposes `PdfDocumentData`, and renders bytes via `generate()`.
 - **PdfDocumentData** – mutable store for field values. Set text, checkbox, and signature bindings on the document after building.
 - **PdfSignatureData** – immutable helper for passing captured ink when you need manual control.
+- **SignatureRenderer / PaintingSignatureRenderer** – strategy for turning captured strokes into PNGs; override it to plug in a custom renderer.
 - **SignaturePad / SignaturePadController** – drop-in Flutter widget for capturing ink strokes and canvas dimensions for signature fields.
 
 ## Workflow
