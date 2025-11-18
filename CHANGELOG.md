@@ -1,3 +1,6 @@
+## 0.4.1
+* Modified example app.
+
 ## 0.4.0
 * Converted signature rendering into a pluggable strategy via `SignatureRenderer` with `PaintingSignatureRenderer` as the default implementation.
 * Allow `PdfDocumentBuilder` and `PdfDocument` to accept custom signature renderers while keeping the public API defaults intact.

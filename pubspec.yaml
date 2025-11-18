@@ -1,6 +1,6 @@
 name: pdf_edit
 description: "A package to edit and fill the fields of PDF forms."
-version: 0.4.0
+version: 0.4.1
 repository: "https://github.com/Just-Betr/pdf_edit"
 homepage:
 
@@ -11,8 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  pdf: ^3.10.8
-  printing: ^5.13.3
+  pdf: ^3.11.3
+  printing: ^5.14.2
 
 dev_dependencies:
   flutter_test:
