@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:pdf_edit/pdf_edit.dart';
 
 class PdfFormPage extends StatefulWidget {
-  const PdfFormPage({super.key});
+  const PdfFormPage({super.key, required this.document});
+
+  final PdfDocument document;
 
   @override
   State<PdfFormPage> createState() => _PdfFormPageState();
@@ -14,7 +16,6 @@ class _PdfFormPageState extends State<PdfFormPage> {
   late final TextEditingController _firstNameController;
   late final TextEditingController _lastNameController;
   late final SignaturePadController _signatureController;
-  late final PdfDocument _document;
   bool _someFlag = false;
   bool _isSaving = false;
 
@@ -24,14 +25,6 @@ class _PdfFormPageState extends State<PdfFormPage> {
     _firstNameController = TextEditingController();
     _lastNameController = TextEditingController();
     _signatureController = SignaturePadController();
-
-    final builder = PdfDocumentBuilder(assetPath: 'assets/example.pdf')
-      ..text(page: 0, binding: 'firstName', x: 135.375, y: 192.0, size: const Size(102.0, 18.0))
-      ..text(page: 0, binding: 'lastName', x: 133.875, y: 219.75, size: const Size(100.5, 18.0))
-      ..text(page: 1, binding: 'currentDate', x: 359.629, y: 165.0, size: const Size(117.502, 18.0))
-      ..checkbox(page: 1, binding: 'subscribe', x: 92.374, y: 106.504, size: const Size(7.748, 9.503))
-      ..signature(page: 1, binding: 'signature', x: 129.619, y: 164.501, size: const Size(193.747, 20.002));
-    _document = builder.build();
   }
 
   @override
@@ -119,13 +112,12 @@ class _PdfFormPageState extends State<PdfFormPage> {
                     : () async {
                         setState(() => _isSaving = true);
 
-                        final document = _document;
+                        final document = widget.document;
                         document.data
                           ..setText(binding: 'firstName', value: _firstNameController.text.trim())
                           ..setText(binding: 'lastName', value: _lastNameController.text.trim())
                           ..setCheckbox(binding: 'subscribe', value: _someFlag)
-                          ..setSignature(binding: 'signature', controller: _signatureController)
-                          ..setText(binding: 'currentDate', value: _formatCurrentDate());
+                          ..setSignature(binding: 'signature', controller: _signatureController);
 
                         try {
                           final pdfBytes = await document.generate();
@@ -161,11 +153,5 @@ class _PdfFormPageState extends State<PdfFormPage> {
         ),
       ),
     );
-  }
-
-  String _formatCurrentDate() {
-    final now = DateTime.now();
-    String twoDigits(final int value) => value.toString().padLeft(2, '0');
-    return '${twoDigits(now.month)}/${twoDigits(now.day)}/${now.year.toString().padLeft(4, '0')}';
   }
 }

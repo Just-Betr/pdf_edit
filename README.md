@@ -18,8 +18,7 @@ Follow this flow when generating personalised PDFs:
 ### 1. Describe template bindings
 
 ```dart
-import 'dart:ui';
-
+import 'package:flutter/material.dart';
 import 'package:pdf_edit/pdf_edit.dart';
 
 final builder = PdfDocumentBuilder(assetPath: 'assets/forms/example.pdf')
